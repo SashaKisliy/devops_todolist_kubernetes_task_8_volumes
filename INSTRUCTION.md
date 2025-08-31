@@ -67,21 +67,27 @@ kubectl exec -n todoapp -it $POD_NAME -- /bin/bash
 # Внутри пода проверить директорию /app/configs
 ls -la /app/configs/
 
-# Проверить содержимое файла PYTHONUNBUFFERED
-cat /app/configs/PYTHONUNBUFFERED
+# Проверить содержимое конфигурационных файлов (в порядке)
+cat /app/configs/01-python-config
+cat /app/configs/02-django-settings
+cat /app/configs/03-app-config
 ```
 
 **Ожидаемые результаты**:
 
 - Директория `/app/configs/` существует
-- Файл `PYTHONUNBUFFERED` содержит значение `1`
+- Файлы присутствуют в правильном порядке: `01-python-config`, `02-django-settings`, `03-app-config`
+- Проверить порядок файлов: `ls -1 /app/configs/` должен показать файлы в числовом порядке
 - Файлы доступны только для чтения
 
 #### Альтернативный способ проверки через kubectl:
 
 ```bash
 kubectl exec -n todoapp $POD_NAME -- ls -la /app/configs/
-kubectl exec -n todoapp $POD_NAME -- cat /app/configs/PYTHONUNBUFFERED
+kubectl exec -n todoapp $POD_NAME -- ls -1 /app/configs/
+kubectl exec -n todoapp $POD_NAME -- cat /app/configs/01-python-config
+kubectl exec -n todoapp $POD_NAME -- cat /app/configs/02-django-settings
+kubectl exec -n todoapp $POD_NAME -- cat /app/configs/03-app-config
 ```
 
 ### 3. Валидация Secret данных как файлов
@@ -192,12 +198,33 @@ kubectl get all -n todoapp
 
 ```
 /app/
-├── configs/           # ConfigMap files (read-only)
-│   └── PYTHONUNBUFFERED
+├── configs/           # ConfigMap files (read-only, ordered)
+│   ├── 01-python-config
+│   ├── 02-django-settings
+│   └── 03-app-config
 ├── data/             # PersistentVolume mount (read-write)
 │   └── [user files]
 └── secrets/          # Secret files (read-only)
     └── SECRET_KEY
+```
+
+### Проверка порядка файлов ConfigMap
+
+Для валидации того, что файлы ConfigMap монтируются в правильном порядке:
+
+```bash
+# Проверить порядок файлов (должен быть числовой)
+kubectl exec -n todoapp $POD_NAME -- ls -1 /app/configs/
+
+# Ожидаемый вывод:
+# 01-python-config
+# 02-django-settings
+# 03-app-config
+
+# Проверить содержимое каждого файла
+kubectl exec -n todoapp $POD_NAME -- cat /app/configs/01-python-config  # PYTHONUNBUFFERED=1
+kubectl exec -n todoapp $POD_NAME -- cat /app/configs/02-django-settings # DEBUG=0
+kubectl exec -n todoapp $POD_NAME -- cat /app/configs/03-app-config      # MAX_CONNECTIONS=100
 ```
 
 ## Устранение неполадок

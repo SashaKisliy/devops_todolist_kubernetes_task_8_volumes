@@ -68,6 +68,13 @@ spec:
         - name: config-volume
           configMap:
             name: app-config
+            items:
+              - key: 01-python-config
+                path: 01-python-config
+              - key: 02-django-settings
+                path: 02-django-settings
+              - key: 03-app-config
+                path: 03-app-config
         - name: secret-volume
           secret:
             secretName: app-secret

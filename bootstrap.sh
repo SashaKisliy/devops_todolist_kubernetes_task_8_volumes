@@ -21,7 +21,7 @@ kubectl apply -f .infrastructure/pvc.yml
 
 # Apply ConfigMap
 echo "⚙️  Creating ConfigMap..."
-kubectl apply -f .infrastructure/confgiMap.yml
+kubectl apply -f .infrastructure/configMap.yml
 
 # Apply Secret
 echo "🔐 Creating Secret..."
